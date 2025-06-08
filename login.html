@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login & Registrierung | Eventoria</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/svg+xml" href="logo.svg" />
+  </head>
+  <body>
+    <header>
+      <img src="logo.svg" alt="Eventoria Logo" class="logo" />
+      <h1>Willkommen bei Eventoria</h1>
+      <h2>Dein Event. Dein Ticket. Deine Bühne.</h2>
+    </header>
+    <nav>
+      <a href="index.html">Eventoria</a>
+      <a href="login.html">Login</a>
+      <a href="#">Events</a>
+      <a href="kontakt.html">Kontakt</a>
+      <form class="search-form">
+        <input type="text" placeholder="Suche Events..." />
+        <button type="submit">🔍</button>
+      </form>
+    </nav>
+
+    <div class="login-register-container">
+      <!-- Login-Bereich -->
+      <div class="form-section">
+        <h2>Login</h2>
+        <form>
+          <label for="login-email" class="visually-hidden">E-Mail</label>
+          <input type="email" id="login-email" placeholder="E-Mail" required />
+          <label for="login-password" class="visually-hidden">Passwort</label>
+          <input
+            type="password"
+            id="login-password"
+            placeholder="Passwort"
+            required
+          />
+          <button type="submit">Einloggen</button>
+        </form>
+      </div>
+
+      <!-- Trennung -->
+      <div class="divider"></div>
+
+      <!-- Registrierungs-Bereich -->
+      <div class="form-section">
+        <h2>Registrieren</h2>
+        <form action="dbuser.php" method="POST">
+          <label for="register-vorname" class="visually-hidden">Vorname</label>
+          <input
+            type="text"
+            id="register-vorname"
+            name="vorname"
+            placeholder="Vorname"
+            required
+          />
+          <label for="register-nachname" class="visually-hidden"
+            >Nachname</label
+          >
+          <input
+            type="text"
+            id="register-nachname"
+            name="nachname"
+            placeholder="Nachname"
+            required
+          />
+          <label for="register-email" class="visually-hidden">E-Mail</label>
+          <input
+            type="email"
+            id="register-email"
+            name="email"
+            placeholder="E-Mail"
+            required
+          />
+          <label for="register-password" class="visually-hidden"
+            >Passwort</label
+          >
+          <input
+            type="password"
+            id="register-password"
+            name="password"
+            placeholder="Passwort"
+            required
+          />
+          <label for="register-password2" class="visually-hidden"
+            >Passwort bestätigen</label
+          >
+          <input
+            type="password"
+            id="register-password2"
+            name="password2"
+            placeholder="Passwort bestätigen"
+            required
+          />
+
+          <!-- Neues Kästchen für Event-Ersteller -->
+          <div style="margin: 10px 0">
+            <input
+              type="checkbox"
+              id="event-erstellen"
+              name="event_erstellen"
+              value="1"
+            />
+            <label for="event-erstellen"
+              >Ich möchte selbst Events erstellen können</label
+            >
+          </div>
+
+          <button type="submit">Registrieren</button>
+        </form>
+      </div>
+    </div>
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>Eventoria</h4>
+          <p>Deine Plattform für unvergessliche Events.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="index.html">Start</a></li>
+            <li><a href="login.html">Login</a></li>
+            <li><a href="#">Events</a></li>
+            <li><a href="kontakt.html">Kontakt</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Rechtliches</h4>
+          <ul>
+            <li><a href="impressum.html">Impressum</a></li>
+            <li><a href="datenschutz.html">Datenschutz</a></li>
+            <li><a href="agb.html">AGB</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 EventTickets. Alle Rechte vorbehalten.</p>
+      </div>
+    </footer>
+  </body>
+</html>

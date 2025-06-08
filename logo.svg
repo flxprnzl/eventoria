@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <!-- Hintergrundkreis -->
+  <circle cx="100" cy="100" r="95" fill="#111827" stroke="#3B82F6" stroke-width="10" />
+
+  <!-- Ticket-förmiges E -->
+  <path d="M65 60 h40 v15 h-25 v10 h20 v15 h-20 v10 h25 v15 h-40 z" fill="#E94E1B" />
+  
+  <!-- Zahnkante oben rechts -->
+  <circle cx="105" cy="67" r="5" fill="#111827" />
+  <!-- Zahnkante unten rechts -->
+  <circle cx="105" cy="133" r="5" fill="#111827" />
+</svg>
