@@ -1,20 +1,41 @@
+<?php
+session_start();
+require_once 'dbconnect.php';
+
+// Prüfen, ob der User eingeloggt ist
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.html");
+    exit;
+}
+
+// User-Daten auslesen
+$user_id = $_SESSION['user_id'];
+$sql = "SELECT vorname, nachname, email, organizer FROM user WHERE id = ?";
+$stmt = $dbuser->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$stmt->bind_result($vorname, $nachname, $email, $organizer);
+$stmt->fetch();
+$stmt->close();
+?>
+
 <!DOCTYPE html>
 <html lang="de">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kontakt | Eventoria</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/svg+xml" href="logo.svg" />
-  </head>
-  <body>
+    <title>Eventoria</title>
+</head>
+<body>
     <header>
       <img src="logo.svg" alt="Eventoria Logo" class="logo" />
       <h1>Willkommen bei Eventoria</h1>
       <h2>Dein Event. Dein Ticket. Deine Bühne.</h2>
     </header>
     <nav>
-      <a href="index.html">Eventoria</a>
+        <a href="index.html">Eventoria</a>
       <a href="login.html">Login</a>
       <a href="#">Events</a>
       <a href="kontakt.html">Kontakt</a>
@@ -31,29 +52,27 @@
         >Logout</a
       >
     </nav>
-
-    <section class="contact-section">
-      <h1>Kontaktiere uns</h1>
-      <p>Du hast Fragen oder Anregungen? Schreib uns gern eine Nachricht:</p>
-
-      <form class="contact-form" action="#" method="post">
-        <input type="text" name="name" placeholder="Dein Name" required />
-        <input
-          type="email"
-          name="email"
-          placeholder="Deine E-Mail-Adresse"
-          required
-        />
-        <textarea
-          name="nachricht"
-          placeholder="Deine Nachricht"
-          rows="6"
-          required
-        ></textarea>
-        <button type="submit">Nachricht senden</button>
-      </form>
-    </section>
-
+    <div class="login-register-container">
+        <div class="form-section">
+            <h2>Mein Account</h2>
+            <p><strong>Vorname:</strong> <?php echo htmlspecialchars($vorname); ?></p>
+            <p><strong>Nachname:</strong> <?php echo htmlspecialchars($nachname); ?></p>
+            <p><strong>E-Mail:</strong> <?php echo htmlspecialchars($email); ?></p>
+            <p><strong>Event-Ersteller:</strong> <?php echo htmlspecialchars($organizer); ?></p>
+        </div>
+        <div class="form-section">
+            <h3>Passwort ändern</h3>
+            <form action="change_password.php" method="POST">
+                <label for="old_password">Altes Passwort:</label>
+                <input type="password" id="old_password" name="old_password" required>
+                <label for="new_password">Neues Passwort:</label>
+                <input type="password" id="new_password" name="new_password" required>
+                <label for="new_password2">Neues Passwort wiederholen:</label>
+                <input type="password" id="new_password2" name="new_password2" required>
+                <button type="submit">Passwort ändern</button>
+            </form>
+        </div>
+    </div>
     <footer class="footer">
       <div class="footer-content">
         <div class="footer-section">
@@ -83,5 +102,5 @@
       </div>
     </footer>
     <script src="logout.js"></script>
-  </body>
+</body>
 </html>
