@@ -5,15 +5,14 @@ error_reporting(E_ALL);
 $host = "localhost";
 $user = "root";
 $password = "";
-$dbname = "eventoria"; // Name deiner bestehenden Datenbank
+$dbname = "eventoria";
 
-// Verbindung zur Datenbank
 $conn = new mysqli($host, $user, $password, $dbname);
 if ($conn->connect_error) {
     die("Verbindung fehlgeschlagen: " . $conn->connect_error);
 }
 
-// Tabelle erstellen, falls sie noch nicht existiert
+// Tabelle erstellen, falls sie nicht existiert
 $createTable = "
 CREATE TABLE IF NOT EXISTS event (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -46,7 +45,13 @@ if (isset($_GET['get'])) {
     $result = $conn->query("SELECT * FROM event ORDER BY date ASC");
     $events = [];
     while ($row = $result->fetch_assoc()) {
-        $events[] = $row;
+        $events[] = [
+            'id' => $row['id'],
+            'title' => $row['title'],
+            'location' => $row['location'],
+            'date' => $row['date'],
+            'image' => $row['image']
+        ];
     }
 
     header('Content-Type: application/json');

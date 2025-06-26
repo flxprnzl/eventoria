@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Warenkorb | Eventoria</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .cart-row {
+      background: #1f2937;
+      padding: 1.5em;
+      margin-bottom: 2em;
+      border-radius: 0.75em;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+      color: #f9fafb;
+    }
+    .cart-row h3 { color: #e94e1b;}
+    .cart-row p { color: #9ca3af;}
+    .cart-back-btn {
+      margin: 1em 0 2em 0;
+      background: #1f2937;
+      color: #e94e1b;
+      border: 2px solid #e94e1b;
+      border-radius: 1.5em;
+      padding: 0.5em 1.2em;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .cart-back-btn:hover { background: #ef6c42; color: #fff; border-color: #ef6c42;}
+  </style>
+</head>
+<body>
+  <button class="cart-back-btn" onclick="window.location.href='events.html'">← Zurück zu Events</button>
+  <h1 style="color:#e94e1b;">Dein Warenkorb</h1>
+  <div id="cart-contents"></div>
+
+  <script>
+    // Tickets- und Event-Infos holen
+    function fetchEvent(eventId) {
+      return fetch('tickets.php?event_id='+eventId)
+        .then(r=>r.json());
+    }
+    function getCart() {
+      try {
+        return JSON.parse(localStorage.getItem('cart') || '{}');
+      } catch(e) { return {}; }
+    }
+    // Cart laden & ausgeben
+    async function renderCart() {
+      const cart = getCart();
+      let html = '';
+      let hasItems = false;
+      for (let eventId in cart) {
+        if (!cart[eventId]) continue;
+        const data = await fetchEvent(eventId);
+        if (!data.event) continue;
+        html += `<div class="cart-row">
+          <h3>${data.event.title}</h3>
+          <p><b>Ort:</b> ${data.event.location}<br>
+          <b>Datum:</b> ${data.event.date}</p>
+          <ul style="text-align:left; margin-top:1em;">`;
+        for (let ticketId in cart[eventId]) {
+          const ticket = data.tickets.find(t => t.id == ticketId);
+          if (ticket) {
+            html += `<li>${ticket.category}: <b>${cart[eventId][ticketId]}</b> × ${ticket.price} € = <b>${(cart[eventId][ticketId]*ticket.price).toFixed(2)} €</b></li>`;
+            hasItems = true;
+          }
+        }
+        html += `</ul></div>`;
+      }
+      if (!hasItems) {
+        html = '<p style="color:#e94e1b;">Der Warenkorb ist leer.</p>';
+      }
+      document.getElementById('cart-contents').innerHTML = html;
+    }
+    renderCart();
+  </script>
+</body>
+</html>

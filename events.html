@@ -43,7 +43,6 @@
         </form>
       </div>
 
-      <!-- Trennung -->
       <div class="divider"></div>
 
       <!-- Event-Liste -->
@@ -93,31 +92,31 @@
           .then(events => {
             const list = document.getElementById('event-list');
             list.innerHTML = '';
+            console.log('Geladene Events:', events); // <--- Debug-Ausgabe
             events.forEach(event => {
               const image = event.image || 'https://via.placeholder.com/300x150';
+              // WICHTIG: ID anzeigen (Testzwecke)
               list.innerHTML += `
-                <div class="event-card">
+                <a href="tickets.html?id=${event.id}" class="event-card" style="text-decoration: none; color: inherit;">
                   <div class="event-image">
                     <img src="${image}" alt="Eventbild" />
                   </div>
                   <div class="event-info">
-                    <h3 class="event-title">${event.title}</h3>
+                    <h3 class="event-title">${event.title} <span style="font-size:0.8em;color:#3b82f6;">#${event.id}</span></h3>
                     <p class="event-location">${event.location}</p>
                     <p class="event-date">${event.date}</p>
                   </div>
-                </div>
+                </a>
               `;
             });
           });
       }
 
-      // Nach dem Laden der Seite Events anzeigen
       window.addEventListener('DOMContentLoaded', loadEvents);
 
-      // Event-Formular per AJAX absenden
       document.getElementById('event-form').addEventListener('submit', function(e) {
         e.preventDefault();
-        const form = this; // 🔧 wichtig: "this" sichern!
+        const form = this;
         const formData = new FormData(form);
 
         fetch('events.php', {
@@ -127,7 +126,7 @@
         .then(response => response.text())
         .then(() => {
           loadEvents();
-          form.reset(); // 🔧 funktioniert jetzt zuverlässig
+          form.reset();
         });
       });
     </script>
