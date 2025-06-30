@@ -1,6 +1,13 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Nicht eingeloggt']);
+    exit;
+}
 
 $host = "localhost";
 $user = "root";
@@ -24,11 +31,10 @@ $conn->query("CREATE TABLE IF NOT EXISTS ticket (
 
 if (isset($_GET['event_id'])) {
     $event_id = (int)$_GET['event_id'];
-    // Event-Daten laden
     $eventRes = $conn->query("SELECT * FROM event WHERE id=$event_id LIMIT 1");
     $event = $eventRes->fetch_assoc();
 
-    // Ticketdaten laden (falls noch keine: initial anlegen)
+    // Ticketdaten initialisieren, falls noch keine
     $catInfos = [
         ['VIP', 250.00, 300],
         ['Sitzplatz', 50.00, 2700],
@@ -59,12 +65,10 @@ if (isset($_GET['event_id'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ticket_id = (int)$_POST['ticket_id'];
     $qty = max(1, (int)$_POST['qty']);
-    // Prüfen wie viele verfügbar
     $res = $conn->query("SELECT sold, total FROM ticket WHERE id=$ticket_id");
     if ($row = $res->fetch_assoc()) {
         $verf = $row['total'] - $row['sold'];
         if ($qty > 0 && $verf >= $qty) {
-            // Kaufen: sold hochsetzen
             $conn->query("UPDATE ticket SET sold = sold + $qty WHERE id = $ticket_id");
             echo json_encode(['success' => true]);
         } else {

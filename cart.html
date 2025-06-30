@@ -15,9 +15,24 @@
       margin-left: auto;
       margin-right: auto;
       color: #f9fafb;
+      position: relative;
     }
     .cart-row h3 { color: #e94e1b;}
     .cart-row p { color: #9ca3af;}
+    .remove-btn {
+      position: absolute;
+      top: 1em; right: 1em;
+      background: #dc2626;
+      color: #fff;
+      border: none;
+      border-radius: 1em;
+      padding: 0.2em 0.8em;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    .remove-btn:hover {
+      background: #ef6c42;
+    }
     .cart-back-btn {
       margin: 1em 0 2em 0;
       background: #1f2937;
@@ -38,34 +53,54 @@
   <div id="cart-contents"></div>
 
   <script>
-    // Tickets- und Event-Infos holen
+    // Tickets- und Event-Infos abrufen
     function fetchEvent(eventId) {
-      return fetch('tickets.php?event_id='+eventId)
-        .then(r=>r.json());
+      return fetch('tickets.php?event_id=' + eventId)
+        .then(r => r.json());
     }
-    function getCart() {
-      try {
-        return JSON.parse(localStorage.getItem('cart') || '{}');
-      } catch(e) { return {}; }
+
+    // Warenkorb aus der Session laden (nur eigener Warenkorb!)
+    async function getCart() {
+      const res = await fetch('cart.php?fetch=1');
+      const data = await res.json();
+      return data.cart || {};
     }
-    // Cart laden & ausgeben
+
+    // Ticket aus dem Warenkorb entfernen
+    async function removeFromCart(eventId, ticketId) {
+      await fetch('cart.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event_id: eventId, ticket_id: ticketId, qty: 0 })
+      });
+      renderCart();
+    }
+
+    // Warenkorb laden & ausgeben
     async function renderCart() {
-      const cart = getCart();
+      const cart = await getCart();
       let html = '';
       let hasItems = false;
       for (let eventId in cart) {
         if (!cart[eventId]) continue;
         const data = await fetchEvent(eventId);
         if (!data.event) continue;
-        html += `<div class="cart-row">
-          <h3>${data.event.title}</h3>
-          <p><b>Ort:</b> ${data.event.location}<br>
-          <b>Datum:</b> ${data.event.date}</p>
-          <ul style="text-align:left; margin-top:1em;">`;
+        html += `
+          <div class="cart-row">
+            <h3>${data.event.title}</h3>
+            <p><b>Ort:</b> ${data.event.location}<br>
+            <b>Datum:</b> ${data.event.date}</p>
+            <ul style="text-align:left; margin-top:1em;">
+        `;
         for (let ticketId in cart[eventId]) {
           const ticket = data.tickets.find(t => t.id == ticketId);
           if (ticket) {
-            html += `<li>${ticket.category}: <b>${cart[eventId][ticketId]}</b> × ${ticket.price} € = <b>${(cart[eventId][ticketId]*ticket.price).toFixed(2)} €</b></li>`;
+            html += `
+              <li>
+                ${ticket.category}: <b>${cart[eventId][ticketId]}</b> × ${ticket.price} € = <b>${(cart[eventId][ticketId] * ticket.price).toFixed(2)} €</b>
+                <button class="remove-btn" onclick="removeFromCart('${eventId}', '${ticketId}')">Löschen</button>
+              </li>
+            `;
             hasItems = true;
           }
         }
@@ -76,7 +111,9 @@
       }
       document.getElementById('cart-contents').innerHTML = html;
     }
+    window.removeFromCart = removeFromCart;
     renderCart();
+
   </script>
 </body>
 </html>

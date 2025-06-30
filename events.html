@@ -1,3 +1,4 @@
+<?php session_start(); ?>
 <!DOCTYPE html>
 <html lang="de">
   <head>
@@ -16,7 +17,7 @@
     <nav>
       <a href="index.html">Eventoria</a>
       <a href="login.html">Login</a>
-      <a href="events.html" class="active">Events</a>
+      <a href="events.php" class="active">Events</a>
       <a href="kontakt.html">Kontakt</a>
       <form class="search-form">
         <input type="text" placeholder="Suche Events..." />
@@ -27,21 +28,23 @@
     </nav>
 
     <div class="login-register-container">
-      <!-- Event anlegen Bereich -->
-      <div class="form-section">
-        <h2>Neues Event anlegen</h2>
-        <form id="event-form" action="events.php" method="POST">
-          <label for="event-title" class="visually-hidden">Titel</label>
-          <input type="text" id="event-title" name="event-title" placeholder="Titel" required />
-          <label for="event-location" class="visually-hidden">Ort</label>
-          <input type="text" id="event-location" name="event-location" placeholder="Ort" required />
-          <label for="event-date" class="visually-hidden">Datum</label>
-          <input type="date" id="event-date" name="event-date" placeholder="Datum" required />
-          <label for="event-image" class="visually-hidden">Bild-URL</label>
-          <input type="url" id="event-image" name="event-image" placeholder="Bild-URL (optional)" />
-          <button type="submit">Event anlegen</button>
-        </form>
-      </div>
+      <!-- Event anlegen Bereich (nur für Organizer sichtbar!) -->
+      <?php if (isset($_SESSION['user_id']) && ($_SESSION['organizer'] ?? 'nein') === 'ja'): ?>
+        <div class="form-section">
+          <h2>Neues Event anlegen</h2>
+          <form id="event-form" action="events.php" method="POST">
+            <label for="event-title" class="visually-hidden">Titel</label>
+            <input type="text" id="event-title" name="event-title" placeholder="Titel" required />
+            <label for="event-location" class="visually-hidden">Ort</label>
+            <input type="text" id="event-location" name="event-location" placeholder="Ort" required />
+            <label for="event-date" class="visually-hidden">Datum</label>
+            <input type="date" id="event-date" name="event-date" placeholder="Datum" required />
+            <label for="event-image" class="visually-hidden">Bild-URL</label>
+            <input type="url" id="event-image" name="event-image" placeholder="Bild-URL (optional)" />
+            <button type="submit">Event anlegen</button>
+          </form>
+        </div>
+      <?php endif; ?>
 
       <div class="divider"></div>
 
@@ -65,7 +68,7 @@
           <ul>
             <li><a href="index.html">Start</a></li>
             <li><a href="login.html">Login</a></li>
-            <li><a href="events.html">Events</a></li>
+            <li><a href="events.php">Events</a></li>
             <li><a href="kontakt.html">Kontakt</a></li>
           </ul>
         </div>
@@ -95,7 +98,6 @@
             console.log('Geladene Events:', events); // <--- Debug-Ausgabe
             events.forEach(event => {
               const image = event.image || 'https://via.placeholder.com/300x150';
-              // WICHTIG: ID anzeigen (Testzwecke)
               list.innerHTML += `
                 <a href="tickets.html?id=${event.id}" class="event-card" style="text-decoration: none; color: inherit;">
                   <div class="event-image">
@@ -114,20 +116,25 @@
 
       window.addEventListener('DOMContentLoaded', loadEvents);
 
-      document.getElementById('event-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const form = this;
-        const formData = new FormData(form);
+      // Nur binden, wenn das Formular existiert (d.h. wenn Organizer)
+      document.addEventListener('DOMContentLoaded', function() {
+        var form = document.getElementById('event-form');
+        if (form) {
+          form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(form);
 
-        fetch('events.php', {
-          method: 'POST',
-          body: formData
-        })
-        .then(response => response.text())
-        .then(() => {
-          loadEvents();
-          form.reset();
-        });
+            fetch('events.php', {
+              method: 'POST',
+              body: formData
+            })
+            .then(response => response.text())
+            .then(() => {
+              loadEvents();
+              form.reset();
+            });
+          });
+        }
       });
     </script>
   </body>

@@ -5,61 +5,15 @@
   <title>Tickets kaufen | Eventoria</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* ... Styles wie zuvor ... */
-    .ticket-row {
-      background: #1f2937;
-      padding: 1.5em;
-      margin-bottom: 2em;
-      border-radius: 0.75em;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.13);
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-    }
+    .ticket-row { background: #1f2937; padding: 1.5em; margin-bottom: 2em; border-radius: 0.75em; box-shadow: 0 2px 8px rgba(0,0,0,0.13); display: flex; flex-direction: column; align-items: flex-start; max-width: 400px; margin-left: auto; margin-right: auto;}
     .ticket-row h3 { color: #e94e1b; margin-bottom: 0.2em;}
     .ticket-row p { color: #9ca3af; margin: 0.2em 0;}
     .ticket-row form { display: flex; gap: 1em; align-items: center; margin-top: 1em;}
     .ticket-row input[type=number] { width: 60px; border-radius: 0.4em; border: none; background: #374151; color: #f9fafb; padding: 0.5em;}
-    .ticket-row button {
-      padding: 0.5em 1.3em;
-      border-radius: 0.5em;
-      border: none;
-      background: #e94e1b;
-      color: #fff;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
+    .ticket-row button { padding: 0.5em 1.3em; border-radius: 0.5em; border: none; background: #e94e1b; color: #fff; cursor: pointer; transition: background 0.2s;}
     .ticket-row button:hover { background: #ef6c42;}
-    .cart-btn {
-      position: fixed;
-      top: 1em;
-      right: 1em;
-      background: #3b82f6;
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      width: 44px; height: 44px;
-      font-size: 1.3em;
-      cursor: pointer;
-      z-index: 99;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.20);
-    }
-    .back-btn {
-      position: absolute;
-      left: 2em; top: 2em;
-      background: #1f2937;
-      color: #e94e1b;
-      border: 2px solid #e94e1b;
-      border-radius: 1.5em;
-      padding: 0.5em 1.2em;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
+    .cart-btn { position: fixed; top: 1em; right: 1em; background: #3b82f6; color: #fff; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 1.3em; cursor: pointer; z-index: 99; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.20);}
+    .back-btn { position: absolute; left: 2em; top: 2em; background: #1f2937; color: #e94e1b; border: 2px solid #e94e1b; border-radius: 1.5em; padding: 0.5em 1.2em; font-weight: bold; cursor: pointer; transition: background 0.2s;}
     .back-btn:hover { background: #ef6c42; color: #fff; border-color: #ef6c42;}
     @media (max-width:600px) {
       .back-btn { left: 1em; top: 1em; }
@@ -88,91 +42,80 @@
     let eventData = null;
     let ticketCache = {};
 
-    // Warenkorb aus localStorage holen/speichern
-    function getCart() {
-      try {
-        return JSON.parse(localStorage.getItem('cart') || '{}');
-      } catch(e) { return {}; }
-    }
-    function setCart(cart) {
-      localStorage.setItem('cart', JSON.stringify(cart));
+    // Warenkorb für eingeloggten Nutzer aus der Session holen (AJAX)
+    async function getCart() {
+      const res = await fetch('cart.php?fetch=1');
+      const data = await res.json();
+      return data.cart && data.cart[eventId] ? data.cart[eventId] : {};
     }
 
-    // Event- und Ticketdaten laden
-    fetch('tickets.php?event_id=' + eventId)
-      .then(r => r.json())
-      .then(data => {
-        if (!data.event) {
-          document.getElementById('msg').innerText = 'Event nicht gefunden!';
-          return;
-        }
-        eventData = data.event;
-        ticketCache = {}; // Merkt alle Tickets zur ID
-        document.getElementById('event-details').innerHTML = `
-          <h1>${eventData.title}</h1>
-          <p><strong>Ort:</strong> ${eventData.location}</p>
-          <p><strong>Datum:</strong> ${eventData.date}</p>
-          <img src="${eventData.image || 'logo.svg'}" style="max-width:340px; border-radius:0.6em; margin: 1em 0;">
-        `;
-        const cart = getCart();
-        const tlist = data.tickets.map(ticket => {
-          ticketCache[ticket.id] = ticket; // Für spätere Logik
-          let cartQty = (cart[eventId] && cart[eventId][ticket.id]) ? cart[eventId][ticket.id] : 0;
-          let avail = ticket.available - cartQty;
-          if (avail < 0) avail = 0;
-          return `
-            <div class="ticket-row">
-              <h3>${ticket.category}</h3>
-              <p>Preis: <b>${ticket.price} €</b></p>
-              <p>Verfügbar: <span id="avail${ticket.id}">${avail}</span> von ${ticket.total}</p>
-              <form onsubmit="return addToCart(${ticket.id}, this)">
-                <input type="number" min="1" max="${avail}" value="1" name="qty" id="input${ticket.id}" ${avail === 0 ? 'disabled' : ''}>
-                <button type="submit" ${avail === 0 ? 'disabled' : ''}>In den Warenkorb</button>
-              </form>
-              <div id="msg${ticket.id}" style="color:#e94e1b;font-size:0.9em">
-                ${cartQty > 0 ? 'Im Warenkorb: ' + cartQty : ''}
-              </div>
+    // Event- und Ticketdaten samt Warenkorb laden und anzeigen
+    async function renderTickets() {
+      const dataRes = await fetch('tickets.php?event_id=' + eventId);
+      const data = await dataRes.json();
+      if (!data.event) {
+        document.getElementById('msg').innerText = 'Event nicht gefunden!';
+        return;
+      }
+      eventData = data.event;
+      ticketCache = {};
+      document.getElementById('event-details').innerHTML = `
+        <h1>${eventData.title}</h1>
+        <p><strong>Ort:</strong> ${eventData.location}</p>
+        <p><strong>Datum:</strong> ${eventData.date}</p>
+        <img src="${eventData.image || 'logo.svg'}" style="max-width:340px; border-radius:0.6em; margin: 1em 0;">
+      `;
+      const cart = await getCart();
+      const tlist = data.tickets.map(ticket => {
+        ticketCache[ticket.id] = ticket;
+        let cartQty = cart[ticket.id] || 0;
+        let avail = ticket.available - cartQty;
+        if (avail < 0) avail = 0;
+        return `
+          <div class="ticket-row">
+            <h3>${ticket.category}</h3>
+            <p>Preis: <b>${ticket.price} €</b></p>
+            <p>Verfügbar: <span id="avail${ticket.id}">${avail}</span> von ${ticket.total}</p>
+            <form onsubmit="return addToCart(${ticket.id}, this)">
+              <input type="number" min="1" max="${avail}" value="1" name="qty" id="input${ticket.id}" ${avail === 0 ? 'disabled' : ''}>
+              <button type="submit" ${avail === 0 ? 'disabled' : ''}>In den Warenkorb</button>
+            </form>
+            <div id="msg${ticket.id}" style="color:#e94e1b;font-size:0.9em">
+              ${cartQty > 0 ? 'Im Warenkorb: ' + cartQty : ''}
             </div>
-          `;
-        }).join('');
-        document.getElementById('ticket-list').innerHTML = tlist;
-      });
+          </div>
+        `;
+      }).join('');
+      document.getElementById('ticket-list').innerHTML = tlist;
+    }
 
-    // Ticket in den Warenkorb legen und Live-Anzeige aktualisieren
+    // Ticket in den Warenkorb legen, dann Tickets neu rendern
     function addToCart(ticket_id, form) {
       let qty = parseInt(form.qty.value, 10);
       if (!ticketCache[ticket_id] || qty < 1) return false;
 
-      // Aktuelle Verfügbarkeit abziehen (inkl. was schon im Cart ist)
-      let cart = getCart();
-      if (!cart[eventId]) cart[eventId] = {};
-      let alreadyInCart = cart[eventId][ticket_id] || 0;
-      let avail = ticketCache[ticket_id].available - alreadyInCart;
-      if (qty > avail) qty = avail;
-      if (qty < 1) qty = 1;
-
-      cart[eventId][ticket_id] = alreadyInCart + qty;
-      setCart(cart);
-
-      // Live-UI aktualisieren
-      document.getElementById('msg'+ticket_id).textContent = `Im Warenkorb: ${cart[eventId][ticket_id]}`;
-      let newAvail = ticketCache[ticket_id].available - cart[eventId][ticket_id];
-      document.getElementById('avail'+ticket_id).textContent = (newAvail > 0 ? newAvail : 0);
-
-      // Auch das Input-Feld updaten (damit man nicht mehr als möglich wählen kann)
-      let input = document.getElementById('input'+ticket_id);
-      if (input) {
-        input.max = Math.max(0, newAvail);
-        if (newAvail <= 0) {
-          input.value = "0";
-          input.disabled = true;
-          form.querySelector("button").disabled = true;
+      fetch('cart.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          event_id: eventId,
+          ticket_id: ticket_id,
+          qty: qty
+        })
+      })
+      .then(r => r.json())
+      .then(resp => {
+        if (resp.ok) {
+          renderTickets(); // Nach dem Hinzufügen neu laden, damit Verfügbarkeiten und "Im Warenkorb" stimmen
+        } else {
+          alert('Konnte nicht zum Warenkorb hinzufügen!');
         }
-      }
+      });
       return false;
     }
-    // Explizit ins globale Fenster hängen für Inline-Onsubmit!
     window.addToCart = addToCart;
+
+    renderTickets();
   </script>
 </body>
 </html>

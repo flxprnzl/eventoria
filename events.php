@@ -1,12 +1,19 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+
+// Login-Zwang!
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Nicht eingeloggt']);
+    exit;
+}
 
 $host = "localhost";
 $user = "root";
 $password = "";
 $dbname = "eventoria";
-
 $conn = new mysqli($host, $user, $password, $dbname);
 if ($conn->connect_error) {
     die("Verbindung fehlgeschlagen: " . $conn->connect_error);
@@ -23,8 +30,13 @@ CREATE TABLE IF NOT EXISTS event (
 )";
 $conn->query($createTable);
 
-// Event hinzufügen (POST)
+// Event hinzufügen (POST) — NUR FÜR ORGANIZER!
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (empty($_SESSION['organizer']) || $_SESSION['organizer'] !== 'ja') {
+        http_response_code(403);
+        echo 'Kein Organizer!';
+        exit;
+    }
     $title = $_POST['event-title'] ?? '';
     $location = $_POST['event-location'] ?? '';
     $date = $_POST['event-date'] ?? '';
@@ -36,7 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $stmt->close();
     }
-
     exit;
 }
 
@@ -53,7 +64,6 @@ if (isset($_GET['get'])) {
             'image' => $row['image']
         ];
     }
-
     header('Content-Type: application/json');
     echo json_encode($events);
     exit;

@@ -57,9 +57,7 @@
         <h3>100% digitale Tickets</h3>
         <p>
           Mit Eventoria erhältst du deine Tickets direkt nach dem Kauf digital
-          aufs Smartphone oder per E-Mail. Kein Warten, kein Ausdrucken –
-          einfach speichern, vorzeigen und los geht’s. Der Zugang zu deinem
-          Event war noch nie so unkompliziert.
+          aufs Smartphone oder per E-Mail. Kein Warten, kein Ausdrucken – einfach speichern, vorzeigen und los geht’s.
         </p>
       </div>
       <div class="trust-item">
@@ -135,8 +133,9 @@
             list.innerHTML = '';
             events.forEach(event => {
               const image = event.image || 'https://via.placeholder.com/300x150';
+              // Event-Card als klickbares Element
               list.innerHTML += `
-                <div class="event-card">
+                <div class="event-card" style="cursor:pointer;" onclick="window.location.href='tickets.html?id=${event.id}'">
                   <div class="event-image">
                     <img src="${image}" alt="Eventbild" />
                   </div>
